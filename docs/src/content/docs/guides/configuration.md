@@ -79,6 +79,7 @@ ci_timeout: "4h"  # any Go duration string
 log_level: info  # debug | info | warn | error
 
 # Max follow-up auto-fix attempts per step. 0 = disabled after the initial step pass.
+# Document fixes are attempted during the initial document pass.
 auto_fix:
   rebase: 3
   document: 3
@@ -124,7 +125,8 @@ ignore_patterns:
   - "*.generated.go"
   - "vendor/**"
 
-# Override auto-fix limits for this repo.
+# Override follow-up auto-fix limits for this repo.
+# Document fixes are attempted during the initial document pass.
 auto_fix:
   document: 3
   lint: 5

@@ -38,7 +38,7 @@ The pipeline is opinionated so that "passed the gate" has a stable meaning:
 | 2 | **Rebase** | Fetch upstream, rebase your branch onto it | `3` |
 | 3 | **Review** | AI code review of your diff | `0` (requires approval) |
 | 4 | **Test** | Run baseline tests and gather evidence for inferred intent | `3` |
-| 5 | **Document** | Check for missing or stale doc updates | `3` |
+| 5 | **Document** | Update docs when needed and report unresolved gaps | initial pass |
 | 6 | **Lint** | Run lint/static analysis | `3` |
 | 7 | **Push** | Push the validated branch upstream | n/a |
 | 8 | **PR** | Create or update the pull request | n/a |
@@ -49,7 +49,7 @@ The pipeline is opinionated so that "passed the gate" has a stable meaning:
 - **Intent first** so downstream agent prompts and generated PR descriptions can include best-effort author intent when transcript matching succeeds.
 - **Rebase next** so everything else runs against the latest upstream. If there's no diff left after the rebase, the pipeline skips the rest.
 - **Review before test** so the agent reads fresh code, not code it may have touched during fixes.
-- **Document after test** so docs are checked against code that's known to work.
+- **Document after test** so docs are updated against code that's known to work.
 - **Lint last among local checks** so it doesn't churn over code that may still change.
 - **Push → PR → CI** happens after all local checks pass. CI is the only step that talks to the outside world for validation.
 
@@ -59,7 +59,7 @@ Every step can:
 
 - **Complete** cleanly and advance the pipeline.
 - **Return findings** with severity (`error`, `warning`, `info`) and an action (`auto-fix`, `ask-user`, `no-op`).
-- **Trigger auto-fix** if the step's `auto_fix` limit is above 0, the step result is auto-fixable, and any finding is `auto-fix`-eligible.
+- **Trigger auto-fix** if the step's `auto_fix` limit is above 0, the step result is auto-fixable, and any finding is `auto-fix`-eligible. Document and empty-command lint can instead apply safe fixes during their initial pass and report only unresolved findings.
 - **Pause for approval** if blocking findings remain after auto-fix, or if any finding is `ask-user`.
 - **Skip** when there's nothing to do (e.g., no diff, unsupported host).
 - **Fail** on fatal errors and stop the pipeline.

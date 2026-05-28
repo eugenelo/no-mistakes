@@ -30,8 +30,10 @@ flowchart TD
    - If issues remain, the step pauses for user approval
    - If everything passes, the step completes and the pipeline moves on
 
-The lint step has one exception: when `commands.lint` is empty, the agent detects relevant linters and formatters, applies safe fixes, verifies them, and commits any changes during the initial lint pass.
-Any unresolved lint findings from that pass pause for approval instead of entering another automatic fix loop.
+Two steps apply fixes during their initial pass instead of relying on a follow-up automatic fix loop.
+When `commands.lint` is empty, the agent detects relevant linters and formatters, applies safe fixes, verifies them, and commits any changes during the initial lint pass.
+The document step finds documentation gaps, updates docs or doc comments for every gap it can resolve, verifies the edits, and commits any documentation changes during the initial document pass.
+Unresolved findings from either pass pause for approval instead of entering another automatic fix loop.
 
 ## Configuration
 
@@ -48,6 +50,7 @@ auto_fix:
 ```
 
 Setting a step to `0` disables the follow-up auto-fix loop, so the pipeline pauses for human input when that step finds issues.
+The document step does not use this limit for automatic follow-up loops because it attempts documentation fixes during its initial pass.
 For empty `commands.lint`, the initial lint pass can still apply safe fixes before reporting unresolved issues.
 
 `auto_fix.review` defaults to `0`, so review findings require manual approval unless you opt in.
@@ -66,10 +69,10 @@ Agent-driven findings now use an `action` field instead of `requires_human_revie
 
 `ask-user` is meant for findings that need human judgment - for example, questioning an intentional product or design choice, arguing that an intentional addition, removal, or guard should be undone, or reporting that the test step could not produce enough evidence for the inferred intent. Routine correctness, reliability, or security fixes still stay `auto-fix` even if the smallest fix reintroduces a small amount of previously deleted logic.
 
-The `review`, `test`, and configured-command `lint` steps use this shared model directly. The `document` step also uses the same `action` field, but any documentation finding still pauses for approval because even objective doc gaps need an explicit documentation pass before the pipeline continues.
+The `review`, `test`, and configured-command `lint` steps use this shared model directly. The `document` step also uses the same `action` field, but unresolved documentation findings pause for approval because the initial document pass already attempted the documentation updates it could make safely.
 When `commands.lint` is empty, lint findings describe issues left after the agent already attempted safe fixes, so they pause for approval instead of remaining eligible for another automatic fix loop.
 
-Documentation findings use the same approval loop, but the `document` step treats any finding as a documentation gap that should pause for approval. When auto-fix is enabled, the agent can update docs or doc comments, then the step re-runs and proceeds only after reassessment returns no findings.
+Documentation findings use the same approval UI, but the `document` step treats any finding as an unresolved documentation gap or judgment call that should pause for approval.
 
 ## User-triggered fixes
 
@@ -86,7 +89,7 @@ After a user-triggered fix, the step re-runs and pauses again to show you the re
 
 ## Fix commits
 
-Each auto-fix cycle commits its changes with a descriptive message:
+Each auto-fix cycle commits its changes with a descriptive message. Agent-managed initial passes that apply safe fixes, such as Document and empty-command Lint, use the same step-specific prefixes:
 
 | Step | Commit prefix |
 |---|---|
@@ -100,7 +103,7 @@ The push step commits any remaining uncommitted changes with `no-mistakes: apply
 
 ## Step rounds
 
-Each execution of a step (initial run or follow-up auto-fix run) is recorded as a "round" in the database. A round stores its findings, duration, any selected finding IDs and whether that selection came from the user or auto-fix filtering, the merged finding payload actually sent to the fix agent for that round, and the one-line fix summary for fix rounds. That merged payload can include per-finding user notes and user-authored findings added from the TUI. The PR body's deterministic risk assessment, testing, and pipeline sections are built from these rounds, giving reviewers visibility into test results, review risk, what was fixed, and how many attempts it took. In PR pipeline details, auto-fix rounds are rendered as an issue -> fix -> verification narrative instead of a round-numbered log: each fix summary is followed by either a successful re-check or the findings still open after that fix.
+Each execution of a step (initial run or follow-up auto-fix run) is recorded as a "round" in the database. A round stores its findings, duration, any selected finding IDs and whether that selection came from the user or auto-fix filtering, the merged finding payload actually sent to the fix agent for that round, and any one-line fix summary from that execution. That merged payload can include per-finding user notes and user-authored findings added from the TUI. The PR body's deterministic risk assessment, testing, and pipeline sections are built from these rounds, giving reviewers visibility into test results, review risk, what was fixed, and how many attempts it took. In PR pipeline details, auto-fix rounds are rendered as an issue -> fix -> verification narrative instead of a round-numbered log: each fix summary is followed by either a successful re-check or the findings still open after that fix.
 
 Round trigger types:
 - `initial` - first execution
