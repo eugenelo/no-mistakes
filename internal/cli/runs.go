@@ -67,13 +67,20 @@ func newRunsCmd() *cobra.Command {
 
 func printRunLine(w io.Writer, r *db.Run) {
 	ts := time.Unix(r.CreatedAt, 0).Format("2006-01-02 15:04")
-	sha := r.HeadSHA
-	if len(sha) > 8 {
-		sha = sha[:8]
-	}
+	printRunSummaryLine(w, r, ts)
+}
+
+func printRunSummaryLine(w io.Writer, r *db.Run, when string) {
 	pr := ""
 	if r.PRURL != nil {
 		pr = fmt.Sprintf("  %s", *r.PRURL)
 	}
-	fmt.Fprintf(w, "  %-12s %-20s %s  %s%s\n", runStatusStyle(r.Status), r.Branch, sDim.Render(sha), sDim.Render(ts), pr)
+	fmt.Fprintf(w, "  %-12s %-20s %s  %s  %s%s\n", runStatusStyle(r.Status), r.Branch, r.ID, sDim.Render(shortHeadSHA(r.HeadSHA)), sDim.Render(when), pr)
+}
+
+func shortHeadSHA(sha string) string {
+	if len(sha) > 8 {
+		return sha[:8]
+	}
+	return sha
 }

@@ -6,8 +6,10 @@ description: All install options, prerequisites, update, and uninstall.
 ## macOS / Linux
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/eugenelo/no-mistakes/main/docs/install.sh | sh
 ```
+
+The installer downloads release artifacts from `eugenelo/no-mistakes` by default. Override that with `NO_MISTAKES_RELEASE_REPO=owner/repo` when testing another release source. If this fork does not have release artifacts yet, use the source or existing-wrapper install below.
 
 The installer keeps the real binary in `~/.no-mistakes/bin` and exposes `no-mistakes` through a symlink in `~/.local/bin` or `/usr/local/bin`. That keeps future `no-mistakes update` runs in a user-owned location instead of rewriting a system binary in place.
 
@@ -18,7 +20,7 @@ Official release binaries installed this way include the default self-hosted tel
 ## Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.ps1 | iex
+irm https://raw.githubusercontent.com/eugenelo/no-mistakes/main/docs/install.ps1 | iex
 ```
 
 Installs the binary and restarts the background daemon automatically with `no-mistakes.exe daemon restart`, preferring a managed Task Scheduler task and falling back to a detached daemon if needed. If the restart fails, the install command fails.
@@ -31,18 +33,32 @@ Official release binaries installed this way include the default self-hosted tel
 go install github.com/kunchenguid/no-mistakes/cmd/no-mistakes@latest
 ```
 
-`go install` builds the CLI without an embedded telemetry website ID, so telemetry stays off by default unless you later set `NO_MISTAKES_UMAMI_WEBSITE_ID` at runtime.
+`go install` builds the CLI without an embedded telemetry website ID, so telemetry stays off by default unless you later set `NO_MISTAKES_UMAMI_WEBSITE_ID` at runtime. This uses the upstream module path; use the source install below for fork-specific patches.
 
 ## From source
 
 ```sh
-git clone git@github.com:kunchenguid/no-mistakes.git
+git clone git@github.com:eugenelo/no-mistakes.git
 cd no-mistakes
-make build
-make install
+make install VERSION=dev-fork
 ```
 
 `make build` embeds the telemetry host from `NO_MISTAKES_UMAMI_HOST` in a repo-local `.env` first, then `UMAMI_HOST` from the shell, then the default self-hosted host. It embeds the telemetry website ID from `NO_MISTAKES_UMAMI_WEBSITE_ID` in `.env` first, then `UMAMI_WEBSITE_ID` from the shell, then the default website ID.
+
+### Existing wrapper install
+
+If your existing install has `~/.local/bin/no-mistakes` pointing at a wrapper script in `~/.no-mistakes/bin/no-mistakes`, with the actual binary at `~/.no-mistakes/bin/no-mistakes.real`, replace only the real binary after active runs finish:
+
+```sh
+git clone git@github.com:eugenelo/no-mistakes.git
+cd no-mistakes
+make build VERSION=dev-fork
+no-mistakes daemon stop
+install -m 755 bin/no-mistakes ~/.no-mistakes/bin/no-mistakes.real
+no-mistakes daemon start
+```
+
+Building with a development version such as `dev-fork` disables `no-mistakes update`, so the upstream updater cannot overwrite the forked binary.
 
 ## Prerequisites
 
@@ -66,13 +82,13 @@ no-mistakes update --beta
 no-mistakes update -y
 ```
 
-This downloads the latest release from GitHub, verifies the SHA-256 checksum, atomically replaces the binary, and resets the daemon so it picks up the new executable. It prefers the managed service path and falls back to a detached daemon if service startup is unavailable or fails.
+This downloads the latest release from `eugenelo/no-mistakes`, verifies the SHA-256 checksum, atomically replaces the binary, and resets the daemon so it picks up the new executable. It prefers the managed service path and falls back to a detached daemon if service startup is unavailable or fails.
 
-`no-mistakes update` installs the latest stable release.
+`no-mistakes update` installs the latest stable release from this fork.
 Use `no-mistakes update --beta` to opt into prereleases and install the latest beta when one is newer than the current stable release.
 Use `no-mistakes update -y` to answer yes to update safety prompts.
 
-Because `update` installs the latest official release binary, it installs a binary with the default self-hosted telemetry host and website ID. Disable telemetry with `NO_MISTAKES_TELEMETRY=0`, or override the host and website ID with `NO_MISTAKES_UMAMI_HOST` and `NO_MISTAKES_UMAMI_WEBSITE_ID`.
+Because `update` installs the latest fork release binary, it installs a binary with the default self-hosted telemetry host and website ID. Disable telemetry with `NO_MISTAKES_TELEMETRY=0`, or override the host and website ID with `NO_MISTAKES_UMAMI_HOST` and `NO_MISTAKES_UMAMI_WEBSITE_ID`.
 
 If pending or running pipeline runs exist, the update warns that restarting the daemon can cause those runs to fail, prints each active run's ID, status, branch, and short head SHA, and prompts before continuing.
 If the running daemon was started from a different binary, the update prompts before replacing it.

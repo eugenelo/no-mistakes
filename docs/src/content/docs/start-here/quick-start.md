@@ -3,17 +3,22 @@ title: Quick Start
 description: Initialize no-mistakes and run your first gated push.
 ---
 
-This walks you through your first gated push. For install options other than the macOS/Linux one-liner, see [Installation](/no-mistakes/start-here/installation/).
+This walks you through your first gated push. For install options other than the local fork install, see [Installation](/no-mistakes/start-here/installation/).
 
 ## 1. Install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
+git clone git@github.com:eugenelo/no-mistakes.git
+cd no-mistakes
+make build VERSION=dev-fork
+no-mistakes daemon stop
+install -m 755 bin/no-mistakes ~/.no-mistakes/bin/no-mistakes.real
+no-mistakes daemon start
 ```
 
-The installer drops the binary in `~/.no-mistakes/bin`, links it into `~/.local/bin` or `/usr/local/bin`, and restarts the background daemon. If the restart fails, the install command fails.
+These commands preserve an existing wrapper install where `~/.local/bin/no-mistakes` points at `~/.no-mistakes/bin/no-mistakes`, which then execs the real binary at `~/.no-mistakes/bin/no-mistakes.real`. For release installers and other layouts, see [Installation](/no-mistakes/start-here/installation/).
 
-Official release binaries installed this way include the default self-hosted telemetry host and website ID. Disable telemetry with `NO_MISTAKES_TELEMETRY=0`, or override the host and website ID with `NO_MISTAKES_UMAMI_HOST` and `NO_MISTAKES_UMAMI_WEBSITE_ID`.
+Building with `VERSION=dev-fork` disables `no-mistakes update`, so an upstream update cannot overwrite the forked binary. Disable telemetry with `NO_MISTAKES_TELEMETRY=0`, or override the host and website ID with `NO_MISTAKES_UMAMI_HOST` and `NO_MISTAKES_UMAMI_WEBSITE_ID`.
 
 ## 2. Check prerequisites
 

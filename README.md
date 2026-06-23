@@ -63,10 +63,15 @@ Nothing reaches the configured push target until every check is green.
 ## Install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
+git clone git@github.com:eugenelo/no-mistakes.git
+cd no-mistakes
+make build VERSION=dev-fork
+no-mistakes daemon stop
+install -m 755 bin/no-mistakes ~/.no-mistakes/bin/no-mistakes.real
+no-mistakes daemon start
 ```
 
-Windows, Go install, and build-from-source instructions are in the [installation guide](https://kunchenguid.github.io/no-mistakes/start-here/installation/).
+Release installers, Windows, Go install, and build-from-source instructions are in the [installation guide](docs/src/content/docs/start-here/installation.md).
 
 ## Quick Start
 

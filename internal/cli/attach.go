@@ -185,16 +185,7 @@ func printNoActiveRun(w io.Writer, d *db.DB, repoID string) {
 			fmt.Fprintln(w)
 			fmt.Fprintf(w, "  %s\n", sCyan.Render("Recent runs"))
 			for _, r := range shown {
-				sha := r.HeadSHA
-				if len(sha) > 8 {
-					sha = sha[:8]
-				}
-				age := formatAge(r.CreatedAt)
-				pr := ""
-				if r.PRURL != nil {
-					pr = fmt.Sprintf("  %s", *r.PRURL)
-				}
-				fmt.Fprintf(w, "  %-12s %-20s %s  %s%s\n", runStatusStyle(r.Status), r.Branch, sDim.Render(sha), sDim.Render(age), pr)
+				printRunSummaryLine(w, r, formatAge(r.CreatedAt))
 			}
 			if len(runs) > recentRunsLimit {
 				fmt.Fprintf(w, "  %s\n", sDim.Render(fmt.Sprintf("(%d more - run 'no-mistakes runs' to see all)", len(runs)-recentRunsLimit)))

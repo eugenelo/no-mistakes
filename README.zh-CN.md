@@ -63,10 +63,15 @@
 ## 安装
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
+git clone git@github.com:eugenelo/no-mistakes.git
+cd no-mistakes
+make build VERSION=dev-fork
+no-mistakes daemon stop
+install -m 755 bin/no-mistakes ~/.no-mistakes/bin/no-mistakes.real
+no-mistakes daemon start
 ```
 
-Windows、Go install 以及从源码构建的说明，见[安装指南](https://kunchenguid.github.io/no-mistakes/start-here/installation/)。
+Release 安装器、Windows、Go install 以及从源码构建的说明，见[安装指南](docs/src/content/docs/start-here/installation.md)。
 
 ## 快速上手
 
