@@ -31,3 +31,6 @@ demo_raw.gif
 # Environment
 .env
 .env.local
+
+# Machine-local install/runbook notes. Do not commit host-specific paths.
+LOCAL_INSTALL.md

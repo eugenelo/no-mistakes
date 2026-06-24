@@ -71,7 +71,7 @@ install -m 755 bin/no-mistakes ~/.no-mistakes/bin/no-mistakes.real
 no-mistakes daemon start
 ```
 
-Release 安装器、Windows、Go install 以及从源码构建的说明，见[安装指南](docs/src/content/docs/start-here/installation.md)。
+Release 安装器、Windows、Go install、从源码构建以及本地 fork 更新说明，见[安装指南](docs/src/content/docs/start-here/installation.md)。
 
 ## 快速上手
 

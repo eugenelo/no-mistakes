@@ -71,7 +71,7 @@ install -m 755 bin/no-mistakes ~/.no-mistakes/bin/no-mistakes.real
 no-mistakes daemon start
 ```
 
-Release installers, Windows, Go install, and build-from-source instructions are in the [installation guide](docs/src/content/docs/start-here/installation.md).
+Release installers, Windows, Go install, build-from-source, and local fork update instructions are in the [installation guide](docs/src/content/docs/start-here/installation.md).
 
 ## Quick Start
 

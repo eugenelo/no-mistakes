@@ -60,6 +60,52 @@ no-mistakes daemon start
 
 Building with a development version such as `dev-fork` disables `no-mistakes update`, so the upstream updater cannot overwrite the forked binary.
 
+### Updating an existing fork install
+
+After you change the fork, rebuild and replace the real binary. Do this only when there are no `pending` or `running` runs, because restarting the daemon can interrupt active pipelines. If this checkout has a machine-local `LOCAL_INSTALL.md`, read it first for host-specific paths; that file is gitignored and should not be committed.
+
+```sh
+# Use the local clone of your no-mistakes fork.
+FORK_DIR="${NO_MISTAKES_FORK_DIR:-$HOME/repos/no-mistakes}"
+
+# Use the Go toolchain on PATH, or prepend a locally installed Go if needed.
+# Example: PATH="$HOME/.local/share/go1.25.0/bin:$PATH"
+cd "$FORK_DIR"
+git pull --ff-only
+make build VERSION=dev-fork
+
+# Safety check: from any repo initialized with no-mistakes, list recent runs
+# and wait until none are pending/running.
+no-mistakes runs --limit 10
+
+no-mistakes daemon stop
+install -m 755 "$FORK_DIR/bin/no-mistakes" "$HOME/.no-mistakes/bin/no-mistakes.real"
+no-mistakes daemon start
+no-mistakes --version
+```
+
+If you are not inside a repo initialized with `no-mistakes`, use the state database to check for active runs before restarting:
+
+```sh
+python3 - <<'PY'
+import os, sqlite3
+path = os.path.expanduser('~/.no-mistakes/state.sqlite')
+conn = sqlite3.connect(path)
+for run_id, branch, head_sha, status in conn.execute(
+    "select id, branch, substr(head_sha,1,8), status "
+    "from runs where status in ('pending','running') "
+    "order by created_at desc"
+):
+    print(status, branch, run_id, head_sha)
+PY
+```
+
+The command path stays unchanged:
+
+```text
+~/.local/bin/no-mistakes -> ~/.no-mistakes/bin/no-mistakes -> ~/.no-mistakes/bin/no-mistakes.real
+```
+
 ## Prerequisites
 
 - **git** - required
